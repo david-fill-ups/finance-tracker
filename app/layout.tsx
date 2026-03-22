@@ -33,7 +33,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${geist.variable} font-sans bg-slate-950 text-slate-100 antialiased`}>
         <div className="min-h-screen flex flex-col">
-          <Nav user={session.user} />
+          <Nav user={session.user!} />
           <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">{children}</main>
         </div>
         <Toaster theme="dark" position="bottom-right" />
