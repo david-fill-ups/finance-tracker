@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── NextAuth models (JWT strategy — no Session model needed) ─────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  profile       Profile?
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ── App models ───────────────────────────────────────────────────────────────
+
+model Profile {
+  id         String     @id @default(cuid())
+  userId     String     @unique
+  name       String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  people     Person[]
+  expenses   Expense[]
+  categories Category[]
+}
+
+model Person {
+  id        String         @id @default(cuid())
+  profileId String
+  name      String
+  role      String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  profile   Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  incomes   IncomeSource[]
+  expenses  Expense[]
+}
+
+model IncomeSource {
+  id        String    @id @default(cuid())
+  personId  String
+  name      String
+  amount    Decimal   @db.Decimal(12, 2)
+  frequency Frequency
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  person    Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  profileId String
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  expenses  Expense[]
+
+  @@unique([name, profileId])
+}
+
+model Expense {
+  id         String      @id @default(cuid())
+  profileId  String
+  name       String
+  amount     Decimal     @db.Decimal(12, 2)
+  frequency  Frequency
+  type       ExpenseType
+  personId   String?
+  categoryId String?
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  profile    Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  person     Person?     @relation(fields: [personId], references: [id])
+  category   Category?   @relation(fields: [categoryId], references: [id])
+}
+
+enum Frequency {
+  monthly
+  yearly
+  weekly
+  one_time
+}
+
+enum ExpenseType {
+  JOINT
+  PERSONAL
+}
