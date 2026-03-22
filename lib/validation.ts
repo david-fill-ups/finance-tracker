@@ -23,7 +23,7 @@ export const UpdatePersonSchema = CreatePersonSchema.partial();
 export const CreateIncomeSchema = z.object({
   personId: z.string().min(1, "Person is required"),
   name: z.string().min(1, "Name is required").max(100),
-  amount: z.number({ invalid_type_error: "Amount must be a number" }).positive("Amount must be positive"),
+  amount: z.number({ message: "Amount must be a number" }).positive("Amount must be positive"),
   frequency: FrequencySchema,
   notes: z.string().max(500).nullable().optional(),
 });
@@ -33,7 +33,7 @@ export const UpdateIncomeSchema = CreateIncomeSchema.omit({ personId: true }).pa
 export const CreateExpenseSchema = z
   .object({
     name: z.string().min(1, "Name is required").max(100),
-    amount: z.number({ invalid_type_error: "Amount must be a number" }).positive("Amount must be positive"),
+    amount: z.number({ message: "Amount must be a number" }).positive("Amount must be positive"),
     frequency: FrequencySchema,
     type: ExpenseTypeSchema,
     personId: z.string().nullable().optional(),
